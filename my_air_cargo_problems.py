@@ -131,6 +131,7 @@ class AirCargoProblem(Problem):
         for action in self.actions_list:
             #all +ve preconditions MUST exist
             is_positive = set(action.precond_pos).issubset(set(kb.clauses))
+            #no -ve preconditions 
             is_negative = bool(set(action.precond_neg).intersection(set(kb.clauses)))
             if is_positive and not is_negative:
                 possible_actions.append(action)
