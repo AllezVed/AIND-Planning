@@ -64,12 +64,12 @@ class AirCargoProblem(Problem):
             for cargo in self.cargos:
                 for plane in self.planes:
                     for aeropuerto in self.airports:
-                        precond_pos = [expr("At({}, {})".format(plane, aeropuerto)), expr("At ({}, {})".format(cargo, aeropuerto))]
+                        precond_pos = [expr("At({}, {})".format(cargo, aeropuerto)), expr("At ({}, {})".format(plane, aeropuerto))]
                         precond_neg = []
                         effect_add = [expr("In({}, {})".format(cargo, plane))]
                         effect_rem = [expr("At({}, {})".format(cargo, aeropuerto))]
                         load = Action(expr("Load({}, {}, {})".format(cargo, plane, aeropuerto)), [precond_pos, precond_neg], [effect_add, effect_rem])
-                    loads.append(load)
+                        loads.append(load)
 
             return loads
 
@@ -83,12 +83,12 @@ class AirCargoProblem(Problem):
             for cargo in self.cargos:
                 for plane in self.planes:
                     for aeropuerto in self.airports:
-                        precond_pos = [expr("At({}, {})".format(plane, aeropuerto)), expr("In ({}, {})".format(cargo, plane))]
+                        precond_pos = [expr("At({}, {})".format(cargo, plane)), expr("In ({}, {})".format(plane, aeropuerto))]
                         precond_neg = []
                         effect_add = [expr("At({}, {})".format(cargo, aeropuerto))]
-                        effect_rem = [expr("In({}, {})".format(cargo,plane))]
+                        effect_rem = [expr("In({}, {})".format(cargo, plane))]
                         unload = Action(expr("Unload({}, {}, {})".format(cargo, plane, aeropuerto)), [precond_pos, precond_neg], [effect_add, effect_rem])
-                    unloads.append(unload)
+                        unloads.append(unload)
 
 
             return unloads
@@ -128,24 +128,13 @@ class AirCargoProblem(Problem):
         possible_actions = []
         kb = PropKB() #knowledge base for logical expressions
         kb.tell(decode_state(state, self.state_map).pos_sentence())
-        # for action in self.actions_list:
-        #     #all +ve preconditions MUST exist
-        #     is_positive = set(action.precond_pos).issubset(set(kb.clauses))
-        #     is_negative = not bool(set(action.precond_neg).intersection(set(kb.clauses)))
-        #     if is_positive and is_negative:
-        #         possible_actions.append(action)
         for action in self.actions_list:
-            # logging.debug("\nAction Name / Args: %r / %r", action.name, action.args)
-            is_possible = True
-            for clause in action.precond_pos:
-                if clause not in kb.clauses:
-                    is_possible = False
-            for clause in action.precond_neg:
-                if clause in kb.clauses:
-                    is_possible = False
-            if is_possible:
+            #all +ve preconditions MUST exist
+            is_positive = set(action.precond_pos).issubset(set(kb.clauses))
+            is_negative = bool(set(action.precond_neg).intersection(set(kb.clauses)))
+            if is_positive and not is_negative:
                 possible_actions.append(action)
-
+ 
         return possible_actions
 
     def result(self, state: str, action: Action):
